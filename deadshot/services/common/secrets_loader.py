@@ -25,5 +25,4 @@ def get_secrets(secrets_env_name):
         raise SecretsLoaderException(msg)
     else:
         with open(secrets_filename) as secrets_file:
-            secrets_json = json.loads(secrets_file.read())
-            return secrets_json
+            return json.loads(secrets_file.read())

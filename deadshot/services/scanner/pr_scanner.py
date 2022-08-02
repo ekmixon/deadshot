@@ -48,7 +48,7 @@ class PRScanner:
 
     def create_issue_comment(self, old_comments=None):
         comments = "### Ahoy!! Your PR has some security concerns. " \
-                   "Please review the files listed below:\n"
+                       "Please review the files listed below:\n"
         post_to_slack = False
 
         try:
@@ -65,13 +65,13 @@ class PRScanner:
                         comment_exists = False
                     if not comment_exists:
                         comments += f"- [ ] <b>File: </b> {title} <b>Issue:</b> {issue_iterator}. " \
-                                    f"<b>Recommendation:</b> {nested_issue_values['recommendation']}\n"
+                                        f"<b>Recommendation:</b> {nested_issue_values['recommendation']}\n"
                         if nested_issue_values["slack_alert"] == "True":
                             post_to_slack = True
                             if issue_iterator in self.slack_message_dict:
                                 self.slack_message_dict[issue_iterator] = int(self.slack_message_dict[issue_iterator]) + 1
                             else:
-                                self.slack_message_dict[issue_iterator] = int(1)
+                                self.slack_message_dict[issue_iterator] = 1
 
             comments += "\nIf you have any questions please reach out to #help-security"
             return comments, post_to_slack
@@ -96,12 +96,11 @@ class PRScanner:
     @staticmethod
     def evaluate_app_comment(app_comments, title, issue_iterator):
         try:
-            comment_exists = False
-            for comment in app_comments:
-                if title in comment and issue_iterator in comment:
-                    comment_exists = True
+            return any(
+                title in comment and issue_iterator in comment
+                for comment in app_comments
+            )
 
-            return comment_exists
         except Exception as e:
             logger.error(f"Failed to iterate through comments: {e}")
 
@@ -115,10 +114,21 @@ class PRScanner:
                         if git_line.line_type == "+":
                             res = regex_scan(body=str(git_line.value), file_name=git_file.full_filename, line_number=git_line.line_number)
                             if len(res) > 0 and git_line.line_number is not None:
-                                if str(git_file.full_filename + ":" + str(git_line.line_number)) in identified_tokens:
-                                    identified_tokens[str(git_file.full_filename) + ":" + str(git_line.line_number)].update(res)
+                                if (
+                                    str(
+                                        f"{git_file.full_filename}:{str(git_line.line_number)}"
+                                    )
+                                    in identified_tokens
+                                ):
+                                    identified_tokens[
+                                        f"{str(git_file.full_filename)}:{str(git_line.line_number)}"
+                                    ].update(res)
+
                                 else:
-                                    identified_tokens[git_file.full_filename + ":" + str(git_line.line_number)] = res
+                                    identified_tokens[
+                                        f"{git_file.full_filename}:{str(git_line.line_number)}"
+                                    ] = res
+
 
             return identified_tokens
         except Exception as e:
@@ -143,10 +153,11 @@ class PRScanner:
             temp_text = latest_app_comment["body"]
             temp_list = temp_text.split("\n")
             temp_list = list(filter(None, temp_list))
-            final_list = []
-            for i in range(0, len(temp_list)-1):
-                if "- [ ]" in temp_list[i] or "- [x]" in temp_list[i]:
-                    final_list.append(temp_list[i])
-            return final_list
+            return [
+                temp_list[i]
+                for i in range(len(temp_list) - 1)
+                if "- [ ]" in temp_list[i] or "- [x]" in temp_list[i]
+            ]
+
         except Exception as e:
             logger.error(f"Exception: {e}")

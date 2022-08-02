@@ -27,27 +27,19 @@ def run(**kwargs):
         for title, nested_dict in data.items():
             for regexp in nested_dict["regex"]:
                 pattern = re.compile(regexp)
-                if bool(pattern.search(str(diff_line))):
-                    if nested_dict["entropy_check"] == "True":
-                        if find_entropy(diff_line):
-                            issues.append({title: nested_dict})
-                            if title not in temp_issues.keys():
-                                temp_issues[title] = {
-                                    "recommendation":
-                                        data[title]["recommendation"],
-                                    "slack_alert":
-                                        data[title]["slack_alert"]
-                                }
-                    else:
-                        issues.append({title: nested_dict})
-                        if title not in temp_issues.keys():
-                            temp_issues[title] = {
-                                "recommendation":
-                                    data[title]["recommendation"],
-                                "slack_alert":
-                                    data[title]["slack_alert"]
-                            }
-
+                if bool(pattern.search(str(diff_line))) and (
+                    nested_dict["entropy_check"] == "True"
+                    and find_entropy(diff_line)
+                    or nested_dict["entropy_check"] != "True"
+                ):
+                    issues.append({title: nested_dict})
+                    if title not in temp_issues.keys():
+                        temp_issues[title] = {
+                            "recommendation":
+                                data[title]["recommendation"],
+                            "slack_alert":
+                                data[title]["slack_alert"]
+                        }
         return temp_issues
     except Exception as e:
         logger.error(e)
@@ -71,11 +63,9 @@ def find_entropy(line):
             if hex_entropy > 3:
                 stringsFound.append(character)
 
-    entropic_diff = {}
-    if len(stringsFound) > 0:
+    if stringsFound:
         high_entropy = True
-        entropic_diff['stringsFound'] = stringsFound
-
+        entropic_diff = {'stringsFound': stringsFound}
     return high_entropy
 
 

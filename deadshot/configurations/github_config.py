@@ -12,18 +12,14 @@ class GithubConfig:
         return integration_id, app_pem
 
     def get_github_url(self):
-        gh_url = os.environ.get("GITHUB_URL")
-        return gh_url
+        return os.environ.get("GITHUB_URL")
 
     def get_github_webhook_secret(self):
         _github_secrets = get_secrets("SECRET_GITHUB_SECRET")
-        webhook_secret = _github_secrets["webhook_secret"]
-        return webhook_secret
+        return _github_secrets["webhook_secret"]
 
     def get_github_api(self):
-        gh_api = os.environ.get("GITHUB_API")
-        return gh_api
+        return os.environ.get("GITHUB_API")
 
     def get_github_app_name(self):
-        app_name = os.environ.get("GITHUB_APP_NAME")
-        return app_name
+        return os.environ.get("GITHUB_APP_NAME")

@@ -5,8 +5,7 @@ import os
 
 class JiraConfig:
     def get_jira_url(self):
-        jira_url = os.environ.get("JIRA_SERVER")
-        return jira_url
+        return os.environ.get("JIRA_SERVER")
 
     def get_jira_creds(self):
         _jira_secrets = get_secrets("SECRET_JIRA_AUTH")

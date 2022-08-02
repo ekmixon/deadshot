@@ -40,7 +40,8 @@ def webhook_async(webhook_json):
             if len(identified_secrets) > 0:
                 description = pr_scanner.create_jira_description(identified_secrets)
                 jira_summary = "Deadshot identified secrets in a closed PR"
-                jira_description = f"Please check PR: {html_url} \nThe following were identified:\n" + description
+                jira_description = f"Please check PR: {html_url} \nThe following were identified:\n{description}"
+
                 jira_service = JiraService()
                 jira_service.create_jira_ticket(summary=jira_summary, description=jira_description)
             logger.info(f"Finished processing {html_url}")

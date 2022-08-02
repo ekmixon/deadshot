@@ -36,10 +36,9 @@ class DiffFileTypes:
             (".cpp", cls.CPP),
             ("requirements.txt", cls.PYTHON_REQUIREMENTS)
         ]
-        for ending in endings:
-            if filename.endswith(ending[0]):
-                return ending[1]
-        return None
+        return next(
+            (ending[1] for ending in endings if filename.endswith(ending[0])), None
+        )
 
 
 class DiffFile:
@@ -53,22 +52,18 @@ class DiffFile:
         )
 
     def __str__(self):
-        return "{} ({})".format(
-            self.full_filename,
-            self.file_type
-        )
+        return f"{self.full_filename} ({self.file_type})"
 
     def diff_lines(self):
         for patch in self.patch_file:
             for line in patch:
-                diff_line = DiffLine(
+                yield DiffLine(
                     diff_file=self,
                     value=line.value,
                     line_type=line.line_type,
                     source_line_number=line.source_line_no,
-                    target_line_number=line.target_line_no
+                    target_line_number=line.target_line_no,
                 )
-                yield diff_line
 
 
 class DiffLine:
@@ -93,11 +88,7 @@ class DiffLine:
         self.value = value.strip()
 
     def __str__(self):
-        return "<DiffLine {} {} {}>".format(
-            self.line_type,
-            self.line_number,
-            self.value
-        )
+        return f"<DiffLine {self.line_type} {self.line_number} {self.value}>"
 
 
 class GithubDiffProcessorException(Exception):

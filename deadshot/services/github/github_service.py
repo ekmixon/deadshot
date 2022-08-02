@@ -47,26 +47,28 @@ class GithubService:
         try:
             repo = self.github_connection.get_repo(repo_name)
             pr = repo.get_pull(int(pr_number))
-            comments = pr.get_issue_comments()
-            return comments
+            return pr.get_issue_comments()
         except Exception as e:
             logger.error(f"Exception: {e}")
 
     def get_app_comments(self, repo_name, pr_number):
         # Method to filter out only the Github app comments from all comments posted on a single Pull Request
         try:
-            app_comments = []
             comments = self.get_pr_comments(repo_name, pr_number)
-            for comment in comments:
-                if GithubConfig().get_github_app_name() in comment.user.login:
-                    app_comments.append({
-                        "id": comment.id, "user": comment.user.login,
-                        "body": comment.body, "issue_url": comment.issue_url,
-                        "url": comment.url, "created_at": comment.created_at,
-                        "updated_at": comment.updated_at
-                    })
+            return [
+                {
+                    "id": comment.id,
+                    "user": comment.user.login,
+                    "body": comment.body,
+                    "issue_url": comment.issue_url,
+                    "url": comment.url,
+                    "created_at": comment.created_at,
+                    "updated_at": comment.updated_at,
+                }
+                for comment in comments
+                if GithubConfig().get_github_app_name() in comment.user.login
+            ]
 
-            return app_comments
         except Exception as e:
             logger.error(f"Exception: {e}")
 
@@ -77,11 +79,12 @@ class GithubService:
             comments = self.get_app_comments(repo_name, pr_number)
         latest_comment = {}
         for comment in comments:
-            if len(latest_comment) < 1:
+            if (
+                len(latest_comment) >= 1
+                and comment["updated_at"] > latest_comment["updated_at"]
+                or len(latest_comment) < 1
+            ):
                 latest_comment = comment
-            else:
-                if comment["updated_at"] > latest_comment["updated_at"]:
-                    latest_comment = comment
         return latest_comment
 
     @staticmethod
@@ -90,8 +93,7 @@ class GithubService:
         key = bytes(secret, 'utf-8')
         digester = hmac.new(key=key, msg=payload, digestmod=hashlib.sha1)
         digest_signature = digester.hexdigest()
-        signature = "sha1=" + digest_signature
-        return signature
+        return f"sha1={digest_signature}"
 
     def post_issue_comment(self, comment, repo_name, pr_number):
         # Method to post a comment on the Pull Request conversation as the Github app

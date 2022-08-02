@@ -5,5 +5,4 @@ from deadshot.services.common.secrets_loader import get_secrets
 class SlackConfig:
     def get_slack_webhook(self):
         webhooks = get_secrets("SECRET_SLACK_WEBHOOKS")
-        webhook = webhooks["hook"]
-        return webhook
+        return webhooks["hook"]

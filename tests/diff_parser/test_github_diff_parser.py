@@ -33,10 +33,7 @@ class TestDiffParser(unittest.TestCase):
         lines = []
         for diff_file in diff_parser.diff_files():
             # print(diff_file)
-            for diff_line in diff_file.diff_lines():
-                lines.append(diff_line)
-                # print(diff_line)
-
+            lines.extend(iter(diff_file.diff_lines()))
         added_lines = [line.value for line in lines if line.line_type == DiffLine.LINE_TYPE_ADDED]
         assert added_lines == expected_diff_added, f"[!] added lines do not match: {added_lines}"
 

@@ -24,19 +24,11 @@ def list_objects(page, page_size, items, total):
     base_url = request.base_url
     next_page = None
     if (page * page_size) < total:
-        next_page = "{}?page={}&page_size={}".format(
-            base_url,
-            page + 1,
-            page_size
-        )
+        next_page = f"{base_url}?page={page + 1}&page_size={page_size}"
 
     previous_page = None
     if page > 1:
-        previous_page = "{}?page={}&page_size={}".format(
-            base_url,
-            page - 1,
-            page_size
-        )
+        previous_page = f"{base_url}?page={page - 1}&page_size={page_size}"
 
     return make_response(jsonify({
         "code": 200,

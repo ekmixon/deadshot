@@ -28,20 +28,14 @@ class PullRequestWebhookProcessor:
                 f"Error retrieving PR field: {key_error}; are you sure this is a pull request?"
             )
 
-        if pr_type == "opened" or pr_type == "synchronize" or pr_type == "reopened":
-            return True
-        else:
-            return False
+        return pr_type in ["opened", "synchronize", "reopened"]
 
     def pr_closed(self):
         try:
             install_id = self.webhook_json["installation"]["id"]
             html_url = self.webhook_json['pull_request']['html_url']
             pr_type = self.webhook_json["action"]
-            if pr_type == "closed":
-                return True
-            else:
-                return False
+            return pr_type == "closed"
         except KeyError as key_error:
             logger.error(f"Error retrieving: {key_error}; are you sure this is a pull request?\n")
             raise PullRequestWebhookProcessorException(
